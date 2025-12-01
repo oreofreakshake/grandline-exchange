@@ -1,85 +1,103 @@
-import { supabase } from "../supabaseClient";
-import { Profile } from "../../types/glx_types";
+"use server";
 
-export async function getProfileById(user_id: string): Promise<Profile | null> { 
-    const {data, error} = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user_id)
+import type { Profile } from "../../types/glx_types";
+import { createClient } from "../supabase";
+
+export async function getProfileById(user_id: string): Promise<Profile | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user_id)
     .single();
 
-    if (error) return null;
-    return data as Profile;
+  if (error) return null;
+  return data as Profile;
 }
 
-export async function getProfileByDiscordId(discord_id: string): Promise<Profile | null> { 
-    const {data, error} = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('discord_id', discord_id)
+export async function getProfileByDiscordId(
+  discord_id: string,
+): Promise<Profile | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("discord_id", discord_id)
     .single();
 
-    if (error) return null;
-    return data as Profile;
+  if (error) return null;
+  return data as Profile;
 }
 
 interface UpsertProfileType {
-    id: string;
-    username: string | null;
-    avatar_url: string | null;
+  id: string;
+  username: string | null;
+  avatar_url: string | null;
 
-    discord_id: string | null;
-    discord_username: string | null;
+  discord_id: string | null;
+  discord_username: string | null;
 }
 
-export async function upsertProfile(input: UpsertProfileType) { 
-    const {data, error} = await supabase
-    .from('profiles')
+export async function upsertProfile(input: UpsertProfileType) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("profiles")
     .upsert(
-        {
-            id: input.id,
-            username: input.username ?? null,
-            avatar_url: input.avatar_url ?? null,
-            discord_id: input.discord_id ?? null,
-            discord_username: input.discord_username ?? null,
-        },
-        {
-            onConflict: 'id',
-        }
+      {
+        id: input.id,
+        username: input.username ?? null,
+        avatar_url: input.avatar_url ?? null,
+        discord_id: input.discord_id ?? null,
+        discord_username: input.discord_username ?? null,
+      },
+      {
+        onConflict: "id",
+      },
     )
-    .select('*')
+    .select("*")
     .single();
 
-    if (error) throw error;
-    return data as Profile;
+  if (error) throw error;
+  return data as Profile;
 }
-
 
 //users balance
-export async function getBerriesBalance(user_id: string): Promise<number | null> { 
-    const {data, error} = await supabase
-    .from('profiles')
-    .select('berries_balance')
-    .eq('id', user_id)
+export async function getBerriesBalance(
+  user_id: string,
+): Promise<number | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("berries_balance")
+    .eq("id", user_id)
     .single();
 
-    if (error) return null;
-    return Number(data.berries_balance);
+  if (error) return null;
+  return Number(data.berries_balance);
 }
 
-
 //users transactions (adding/subtracting berries)
-export async function updateBerriesBalance(user_id: string, delta: number): Promise<number> { 
-    const {data, error} = await supabase.rpc("add_berries", {user_id: user_id, amount: delta});
+export async function updateBerriesBalance(
+  user_id: string,
+  delta: number,
+): Promise<number> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("add_berries", {
+    user_id: user_id,
+    amount: delta,
+  });
 
-    if (error) throw error;
-    return Number(data);
+  if (error) throw error;
+  return Number(data);
 }
 
 //prevents if insufficient balance
-export async function hasEnoughBerries(user_id: string, cost: number): Promise<boolean> { 
-    const balance = await getBerriesBalance(user_id);
+export async function hasEnoughBerries(
+  user_id: string,
+  cost: number,
+): Promise<boolean> {
+  const balance = await getBerriesBalance(user_id);
 
-    if (balance === null) return false;
-    return balance >= cost;
+  if (balance === null) return false;
+  return balance >= cost;
 }
