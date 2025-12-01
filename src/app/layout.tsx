@@ -16,7 +16,8 @@ const spaceMono = Space_Mono({
 
 export const metadata: Metadata = {
   title: "Grandline Exchange",
-  description: "Grandline Exchange is a platform for trading Grandline products.",
+  description:
+    "Grandline Exchange is a platform for trading Grandline products.",
 };
 
 export default function RootLayout({
